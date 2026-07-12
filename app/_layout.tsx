@@ -1,24 +1,51 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import React, { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { View, ActivityIndicator } from 'react-native';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+import { TagAlongColors } from '../constants/Colors';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function RootLayoutNavigation() {
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+  useEffect(() => {
+    if (isLoading) return;
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+    // Check if the user is currently inside the tab layout navigation tree
+    const inAuthGroup = segments[0] === 'auth' || segments[0] === 'index';
+
+    if (!user && !inAuthGroup) {
+      // Direct unauthenticated users straight to the login registration screens
+      router.replace('/auth');
+    } else if (user && inAuthGroup) {
+      // Route logged-in users away from onboarding or login loops into the app tabs
+      router.replace('/(tabs)/home');
+    }
+  }, [user, isLoading, segments]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAF9F6' }}>
+        <ActivityIndicator size="large" color={TagAlongColors.primary} />
+      </View>
+    );
+  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="/auth/auth" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="matching-pool" />
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutNavigation />
+    </AuthProvider>
   );
 }

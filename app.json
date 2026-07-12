@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Tag-Along-App",
-    "slug": "Tag-Along-App",
+    "name": "Tag-Along-App-Learners",
+    "slug": "Tag-Along-App-Learners",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -38,7 +38,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

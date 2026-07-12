@@ -1,34 +1,57 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Ionicons } from '@expo/vector-icons';
+import { TagAlongColors } from '../../constants/Colors';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
+    <Tabs screenOptions={{ 
+      headerShown: false,
+      tabBarActiveTintColor: TagAlongColors.primary,
+      tabBarInactiveTintColor: '#94A3B8',
+      tabBarStyle: { 
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderColor: '#F1F5F9',
+        height: 64,
+        paddingBottom: 8,
+      }
+    }}>
+      <Tabs.Screen 
+        name="home" 
+        options={{ 
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />
+        }} 
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
+      <Tabs.Screen 
+        name="my-tags" 
+        options={{ 
+          title: 'My Tags',
+          tabBarIcon: ({ color, size }) => <Ionicons name="pricetags-outline" size={size} color={color} />
+        }} 
+      />
+      
+      {/* Hidden layout tab entry used to store the screen reference without showing a tab block */}
+      <Tabs.Screen 
+        name="create-flow" 
+        options={{ 
+          href: null, // Hides this option visually from the bottom strip!
+        }} 
+      />
+
+      <Tabs.Screen 
+        name="available" 
+        options={{ 
+          title: 'Available',
+          tabBarIcon: ({ color, size }) => <Ionicons name="search-outline" size={size} color={color} />
+        }} 
+      />
+      <Tabs.Screen 
+        name="profile" 
+        options={{ 
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />
+        }} 
       />
     </Tabs>
   );
