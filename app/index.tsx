@@ -31,12 +31,12 @@ export default function OnboardingScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      router.replace('/(tabs)/home');
-    }, 16);
-    return () => clearTimeout(timeout);
-  }, [router]);
+  // useEffect(() => {
+  //   const timeout = setTimeout(() => {
+  //     router.replace('/(tabs)/home');
+  //   }, 16);
+  //   return () => clearTimeout(timeout);
+  // }, [router]);
 
   const handleScroll = (event: any) => {
     const scrollOffset = event.nativeEvent.contentOffset.x;

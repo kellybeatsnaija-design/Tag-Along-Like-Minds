@@ -17,6 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Mocking an initial auth tokens check from secure local storage
     const checkAuthStatus = setTimeout(() => {
         // CHANGE THIS LINE: Set a mock profile to instantly bypass the login screen
+        // setUser(null); 
         setUser({ name: 'Augustine' }); 
         setIsLoading(false);
     }, 100); // Shortened delay for faster hot-reloading

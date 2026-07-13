@@ -1,29 +1,28 @@
-import React, { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { TagAlongColors } from '../constants/Colors';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+
 
 function RootLayoutNavigation() {
   const { user, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
-  useEffect(() => {
-    if (isLoading) return;
+useEffect(() => {
+  if (isLoading) return;
 
-    // Check if the user is currently inside the tab layout navigation tree
-    const inAuthGroup = segments[0] === 'auth' || segments[0] === 'index';
+  // Verify if the user is currently looking at onboarding or auth trees
+  const inAuthGroup = segments[0] === 'auth' || segments[0] === 'index';
 
-    if (!user && !inAuthGroup) {
-      // Direct unauthenticated users straight to the login registration screens
-      router.replace('/auth');
-    } else if (user && inAuthGroup) {
-      // Route logged-in users away from onboarding or login loops into the app tabs
-      router.replace('/(tabs)/home');
-    }
-  }, [user, isLoading, segments]);
-
+  if (!user && !inAuthGroup) {
+    // 💡 CHANGE THIS: Match your stack screen name explicitly!
+    router.replace('/auth'); 
+  } else if (user && inAuthGroup) {
+    router.replace('/(tabs)/home');
+  }
+}, [user, isLoading, segments]);
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAF9F6' }}>
@@ -35,9 +34,10 @@ function RootLayoutNavigation() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="/auth/auth" />
+      <Stack.Screen name="auth/index" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="matching-pool" />
+      <Stack.Screen name="chat/group" />
     </Stack>
   );
 }
