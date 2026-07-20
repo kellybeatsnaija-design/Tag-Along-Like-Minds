@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { TagAlongColors } from '../../constants/Colors';
 import InlineWizardOptions from './InlineWizardOptions';
 
@@ -8,23 +8,31 @@ type Message = {
   sender: 'System' | 'App' | 'User' | 'Partner';
   text: string;
   isSystem?: boolean;
-  interactiveStep?: 'size' | 'comfort' | 'timing' | 'interaction' | 'done';
+  interactiveStep?: 'size' | 'comfort' | 'gender_sub_grid' | 'mood' | 'timing' | 'calendar_picker' | 'interaction' | 'call_time_picker' | 'done';
 };
 
 interface ConversationalCanvasProps {
   messages: Message[];
   onSelectSize: (size: number) => void;
   onSelectComfort: (mode: string) => void;
+  onConfirmGenders?: (genders: string[]) => void;
+  onSelectMood: (mood: string) => void;
   onSelectTiming: (type: 'now' | 'later') => void;
-  onSelectMode: (mode: 'chat' | 'voice' | 'meeting') => void;
+  onConfirmTimestamp?: (finalDate: Date) => void;
+  onSelectMode: (mode: 'chat' | 'call') => void;
+  onConfirmCallTime?: (finalDate: Date) => void;
 }
 
 export default function ConversationalCanvas({
   messages,
   onSelectSize,
   onSelectComfort,
+  onConfirmGenders,
+  onSelectMood,
   onSelectTiming,
+  onConfirmTimestamp,
   onSelectMode,
+  onConfirmCallTime,
 }: ConversationalCanvasProps) {
   return (
     <View style={styles.container}>
@@ -55,8 +63,12 @@ export default function ConversationalCanvas({
               interactiveStep={msg.interactiveStep}
               onSelectSize={onSelectSize}
               onSelectComfort={onSelectComfort}
+              onConfirmGenders={onConfirmGenders}
+              onSelectMood={onSelectMood}
               onSelectTiming={onSelectTiming}
+              onConfirmTimestamp={onConfirmTimestamp}
               onSelectMode={onSelectMode}
+              onConfirmCallTime={onConfirmCallTime}
             />
           </View>
         );

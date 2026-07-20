@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { X } from 'lucide-react-native';
 import { BRAND_COLORS } from '../constants/Colors';
@@ -12,6 +13,7 @@ interface InteractiveMapModalProps {
 
 export default function InteractiveMapModal({ visible, onClose, onConfirm }: InteractiveMapModalProps) {
   const [tempCoord, setTempCoord] = useState<{ latitude: number; longitude: number } | null>(null);
+  const insets = useSafeAreaInsets();
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen">
@@ -25,14 +27,14 @@ export default function InteractiveMapModal({ visible, onClose, onConfirm }: Int
           {tempCoord && <Marker coordinate={tempCoord} pinColor={BRAND_COLORS.primary} />}
         </MapView>
 
-        <View style={styles.topBar}>
+        <View style={[styles.topBar, { top: insets.top + 12 }]}>
           <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
             <X size={22} color={BRAND_COLORS.textDark} />
           </TouchableOpacity>
           <Text style={styles.topBarTitle}>Pick location on map</Text>
         </View>
 
-        <View style={styles.bottomCard}>
+        <View style={[styles.bottomCard, { bottom: insets.bottom + 12 }]}>
           <Text style={styles.cardHeader}>TARGET SELECTION POSITION</Text>
           <Text style={styles.cardDesc}>
             {tempCoord ? `Marker locked at target position` : "Tap firmly anywhere on the map layout to drop a marker pin."}
@@ -52,10 +54,10 @@ export default function InteractiveMapModal({ visible, onClose, onConfirm }: Int
 
 const styles = StyleSheet.create({
   container: { flex: 1, position: 'relative' },
-  topBar: { position: 'absolute', top: Platform.OS === 'ios' ? 50 : 24, left: 20, right: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  topBar: { position: 'absolute', left: 20, right: 20, flexDirection: 'row', alignItems: 'center', gap: 14 },
   closeBtn: { backgroundColor: '#FFF', width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 4 },
   topBarTitle: { fontSize: 16, fontWeight: '700', color: BRAND_COLORS.textDark, backgroundColor: '#FFF', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, overflow: 'hidden' },
-  bottomCard: { position: 'absolute', bottom: Platform.OS === 'ios' ? 40 : 24, left: 16, right: 16, backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: BRAND_COLORS.borderLight },
+  bottomCard: { position: 'absolute', left: 16, right: 16, backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: BRAND_COLORS.borderLight },
   cardHeader: { fontSize: 11, fontWeight: '700', color: BRAND_COLORS.textMuted, letterSpacing: 1.5, marginBottom: 4 },
   cardDesc: { fontSize: 13, color: BRAND_COLORS.textDark, lineHeight: 18, marginBottom: 16, fontWeight: '500' },
   confirmBtn: { backgroundColor: BRAND_COLORS.primary, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, FlatList, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { TagAlongColors } from '../constants/Colors';
 
@@ -28,6 +29,7 @@ const ONBOARDING_SLIDES = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -80,7 +82,7 @@ export default function OnboardingScreen() {
       />
 
       {/* Footer Interface with Pagination Micro-Indicators */}
-      <View style={styles.footerContainer}>
+      <View style={[styles.footerContainer, { bottom: insets.bottom + 30 }]}>
         <View style={styles.paginationRow}>
           {ONBOARDING_SLIDES.map((_, index) => (
             <View
@@ -153,7 +155,6 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     position: 'absolute',
-    bottom: 50,
     left: 0,
     right: 0,
     alignItems: 'center',

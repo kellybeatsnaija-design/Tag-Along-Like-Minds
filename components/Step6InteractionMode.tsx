@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { TagAlongColors } from '../constants/Colors';
 
 interface Step6Props {
-  value: 'chat' | 'voice' | 'meeting';
-  onChange: (val: 'chat' | 'voice' | 'meeting') => void;
+  value: 'chat' | 'call';
+  onChange: (val: 'chat' | 'call') => void;
 }
 
 export default function Step6InteractionMode({ value, onChange }: Step6Props) {
@@ -13,12 +13,12 @@ export default function Step6InteractionMode({ value, onChange }: Step6Props) {
     <View style={styles.stepWrapper}>
       <Text style={styles.mainPromptText}>How do you want to connect?</Text>
       <Text style={styles.subPromptText}>Choose the online option that feels most comfortable.</Text>
-      
+
       {/* Interaction Mode Selection Stack */}
       <View style={styles.modeStack}>
         {/* Chat Only Selection Card row */}
-        <TouchableOpacity 
-          style={[styles.modeListRow, value === 'chat' && styles.activeModeListRow]} 
+        <TouchableOpacity
+          style={[styles.modeListRow, value === 'chat' && styles.activeModeListRow]}
           onPress={() => onChange('chat')}
           activeOpacity={0.8}
         >
@@ -27,32 +27,20 @@ export default function Step6InteractionMode({ value, onChange }: Step6Props) {
             Chat only
           </Text>
         </TouchableOpacity>
-        
-        {/* Voice Call Selection Card row */}
-        <TouchableOpacity 
-          style={[styles.modeListRow, value === 'voice' && styles.activeModeListRow]} 
-          onPress={() => onChange('voice')}
+
+        {/* In-app Call Selection Card row */}
+        <TouchableOpacity
+          style={[styles.modeListRow, value === 'call' && styles.activeModeListRow]}
+          onPress={() => onChange('call')}
           activeOpacity={0.8}
         >
-          <Ionicons name="call-outline" size={24} color={value === 'voice' ? '#FFFFFF' : TagAlongColors.primary} />
-          <Text style={[styles.modeListText, value === 'voice' && styles.activeModeText]}>
-            Voice call
-          </Text>
-        </TouchableOpacity>
-        
-        {/* Online Third Party Video Meeting Selection Card row */}
-        <TouchableOpacity 
-          style={[styles.modeListRow, value === 'meeting' && styles.activeModeListRow]} 
-          onPress={() => onChange('meeting')}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="videocam-outline" size={24} color={value === 'meeting' ? '#FFFFFF' : TagAlongColors.primary} />
+          <Ionicons name="call-outline" size={24} color={value === 'call' ? '#FFFFFF' : TagAlongColors.primary} />
           <View style={styles.meetingTextContainer}>
-            <Text style={[styles.modeListText, value === 'meeting' && styles.activeModeText]}>
-              Online meeting
+            <Text style={[styles.modeListText, value === 'call' && styles.activeModeText]}>
+              Call
             </Text>
-            <Text style={[styles.modeListSubText, value === 'meeting' && styles.activeModeText]}>
-              Teams, Google Meet, or Zoom-style session
+            <Text style={[styles.modeListSubText, value === 'call' && styles.activeModeText]}>
+              Voice, with video if you want it — all in the app
             </Text>
           </View>
         </TouchableOpacity>

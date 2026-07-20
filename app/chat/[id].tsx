@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Send, DollarSign } from 'lucide-react-native';
 
@@ -116,7 +117,7 @@ export default function ChatRoomScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFDF9' },
   container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#EAEAEA', backgroundColor: '#FFF', paddingTop: Platform.OS === 'android' ? 40 : 16 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#EAEAEA', backgroundColor: '#FFF' },
   backButton: { marginRight: 16 },
   headerTitle: { fontSize: 18, fontWeight: 'bold', color: '#111' },
   headerSubtitle: { fontSize: 12, color: '#666', marginTop: 2 },

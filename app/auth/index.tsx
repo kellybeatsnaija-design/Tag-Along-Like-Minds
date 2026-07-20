@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Platform, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { TagAlongColors } from '../../constants/Colors';
+import React, { useState } from 'react';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../config/supabase';
+import { TagAlongColors } from '../../constants/Colors';
 
 // Import decoupled items
 import AuthTabs from './AuthTabs';
@@ -12,6 +13,7 @@ import GoogleButton from './GoogleButton';
 WebBrowser.maybeCompleteAuthSession();
 
 export default function AuthScreen() {
+  const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -21,10 +23,12 @@ export default function AuthScreen() {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email: email.trim(), password: password.trim() });
         if (error) throw error;
-        Alert.alert("Verify Email", "We sent an activation link to your inbox.");
+        router.push({ pathname: '/auth/verify', params: { email: email.trim() } });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: password.trim() });
         if (error) throw error;
+
+        router.replace('/(tabs)/home');
       }
     } catch (err: any) {
       Alert.alert("Auth Error", err.message || "An error occurred.");
@@ -45,7 +49,8 @@ export default function AuthScreen() {
       if (data?.url) {
         const result = await WebBrowser.openAuthSessionAsync(data.url, 'myapp://home');
         if (result.type === 'success' && result.url) {
-          const params = new URL(result.url).searchParams;
+          const fragment = result.url.split('#')[1] ?? '';
+          const params = new URLSearchParams(fragment);
           const access = params.get('access_token');
           const refresh = params.get('refresh_token');
           if (access && refresh) await supabase.auth.setSession({ access_token: access, refresh_token: refresh });

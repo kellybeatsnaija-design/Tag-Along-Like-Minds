@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, ScrollView, FlatList, Image, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, FlatList, Image, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, MapPin, Users, UsersRound } from 'lucide-react-native';
 import * as Location from 'expo-location';
@@ -181,7 +182,7 @@ export default function PerfectCommunitySetupScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFDF9' },
-  topBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, height: 60, borderBottomWidth: 1, borderBottomColor: '#F5F5F2', backgroundColor: '#FFF', paddingTop: Platform.OS === 'android' ? 24 : 0 },
+  topBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, height: 60, borderBottomWidth: 1, borderBottomColor: '#F5F5F2', backgroundColor: '#FFF' },
   backTouch: { padding: 4, marginRight: 12 },
   topBarTitle: { fontSize: 22, fontWeight: '700', color: BRAND_COLORS.textDark, letterSpacing: -0.5 },
   

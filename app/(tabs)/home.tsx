@@ -1,216 +1,305 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { TagAlongColors } from '../../constants/Colors';
+import { router } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { createSessionRecord } from '../../config/queries';
 import { supabase } from '../../config/supabase';
+import { TagAlongColors } from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { useUserStanding } from '../../hooks/use-user-standing';
 
-// Import decoupled conversational core visual modules
+// Import newly decoupled home component modules
 import ConversationalCanvas from '../../components/home/ConversationalCanvas';
-
-const SUGGESTIONS = ['Language practice', 'Coding study', 'Career prep', 'Just vibes', 'Accountability', 'Tech jobs', 'Reading a book together', 'Quiet company', 'Workout buddy', 'Meditation session', 'Gaming session', 'Music jam', 'Art critique', 'Travel planning', 'Cooking together'];
+import DailySparkAnchor from '../../components/home/DailySparkAnchor';
+import HomeHeader from '../../components/home/HomeHeader';
+import SocialMomentumTicker from '../../components/home/SocialMomentumTicker';
+import SuggestionsBar from '../../components/home/SuggestionsBar';
+import UniversalInputPanel from '../../components/home/UniversalInputPanel';
+import StandingBanner from '../../components/safety/StandingBanner';
 
 type Message = {
   id: string;
   sender: 'System' | 'App' | 'User' | 'Partner';
   text: string;
   isSystem?: boolean;
-  interactiveStep?: 'size' | 'comfort' | 'timing' | 'interaction' | 'done';
+  interactiveStep?: 'size' | 'comfort' | 'gender_sub_grid' | 'mood' | 'timing' | 'calendar_picker' | 'interaction' | 'call_time_picker' | 'done';
 };
 
 export default function UnifiedHomeScreen() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const { standing, notice } = useUserStanding(user?.id);
   const scrollViewRef = useRef<ScrollView>(null);
   const [universalInput, setUniversalInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // State structure mirrors cost-effective PostgreSQL columns explicitly
-  const [sessionData, setSessionData] = useState({
-    intent_text: '',
-    target_group_size: 1,
-    comfort_mode: 'Anyone',
-    timing_type: 'now',
-    connection_mode: 'chat'
-  });
-
+  const [sessionData, setSessionData] = useState({ intent_text: '', target_group_size: 1, comfort_mode: 'Anyone', social_mood: 'Low-pressure', timing_type: 'now', connection_mode: 'chat', scheduled_at: null as string | null });
   const [messages, setMessages] = useState<Message[]>([
     { id: 'welcome_msg', sender: 'App', text: 'Hi Augustine 👋\nWhat kind of company do you need today? Type your reason or tap a suggestion below.' }
   ]);
 
-  const handleSend = () => {
-    if (!universalInput.trim() || isSubmitting) return;
+  useEffect(() => {
+    if (!user?.id) return;
 
+    const fetchUnreadCount = async () => {
+      const { count } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+      setUnreadCount(count || 0);
+    };
+
+    fetchUnreadCount();
+
+    const notifChannel = supabase
+      .channel(`notifications:${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        () => fetchUnreadCount()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notifChannel);
+    };
+  }, [user?.id]);
+
+  const handleSend = async () => {
+    if (!universalInput.trim() || isSubmitting || isTyping) return;
     const userText = universalInput.trim();
     setUniversalInput('');
 
-    // Append standard message row into the chat feed layout
     setMessages(prev => [...prev, { id: Math.random().toString(), sender: 'User', text: userText }]);
 
     if (!sessionData.intent_text) {
       setSessionData(prev => ({ ...prev, intent_text: userText }));
-      
-      // Inline Prompt 2 initialization: Capacity Limitations
+      setIsTyping(true);
       setTimeout(() => {
-        setMessages(prev => [...prev, {
-          id: 'step_size',
-          sender: 'App',
-          text: 'How many people do you want to connect with? Choose a capacity that feels comfortable.',
-          interactiveStep: 'size'
-        }]);
-      }, 600);
-    } else {
-      console.log("Routing text straight to messages table channel storage arrays:", userText);
+        setIsTyping(false);
+        setMessages(prev => [...prev, { id: 'step_size', sender: 'App', text: 'Got it. How many people do you want to connect with today?', interactiveStep: 'size' }]);
+      }, 1200);
     }
   };
 
   const handleSelectSize = (size: number) => {
     setSessionData(prev => ({ ...prev, target_group_size: size }));
-    setMessages(prev => [
-      ...prev.map(m => m.id === 'step_size' ? { ...m, interactiveStep: 'done' as const } : m),
-      { id: 'step_comfort', sender: 'App', text: `Capacity set to ${size} person(s). Who feels comfortable to connect with?`, interactiveStep: 'comfort' }
-    ]);
+    setIsTyping(true);
+    setMessages(prev => prev.map(m => m.id === 'step_size' ? { ...m, interactiveStep: 'done' as const } : m));
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, { id: 'step_comfort', sender: 'App', text: `Target size capped to ${size} person. Who feels comfortable to connect with?`, interactiveStep: 'comfort' }]);
+    }, 1000);
   };
 
   const handleSelectComfort = (mode: string) => {
-    setSessionData(prev => ({ ...prev, comfort_mode: mode }));
-    setMessages(prev => [
-      ...prev.map(m => m.id === 'step_comfort' ? { ...m, interactiveStep: 'done' as const } : m),
-      { id: 'step_timing', sender: 'App', text: `Comfort option set to ${mode}. When do you want to connect?`, interactiveStep: 'timing' }
-    ]);
+    setMessages(prev => prev.map(m => m.id === 'step_comfort' ? { ...m, interactiveStep: 'done' as const } : m));
+    if (mode === 'Anyone') {
+      setSessionData(prev => ({ ...prev, comfort_mode: 'Anyone' }));
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { id: 'step_mode', sender: 'App', text: 'Comfort option set to Anyone. How do you want to connect?', interactiveStep: 'interaction' }]);
+      }, 1000);
+    } else {
+      setMessages(prev => [...prev, { id: 'step_genders', sender: 'App', text: 'Select comfortable gender categories:', interactiveStep: 'gender_sub_grid' }]);
+    }
   };
 
-  const handleSelectTiming = (type: 'now' | 'later') => {
-    setSessionData(prev => ({ ...prev, timing_type: type }));
-    setMessages(prev => [
-      ...prev.map(m => m.id === 'step_timing' ? { ...m, interactiveStep: 'done' as const } : m),
-      { id: 'step_mode', sender: 'App', text: 'How do you want to connect? Choose the online option that feels best.', interactiveStep: 'interaction' }
-    ]);
+  const handleConfirmGenders = (genders: string[]) => {
+    setSessionData(prev => ({ ...prev, comfort_mode: genders.join(', ') }));
+    setIsTyping(true);
+    setMessages(prev => prev.map(m => m.id === 'step_genders' ? { ...m, interactiveStep: 'done' as const } : m));
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, { id: 'step_mood', sender: 'App', text: 'How do you want the space to feel today? Select a social energy:', interactiveStep: 'mood' }]);
+    }, 1000);
   };
 
-  const handleSelectMode = async (mode: 'chat' | 'voice' | 'meeting') => {
-    setIsSubmitting(true);
-    const finalData = { ...sessionData, connection_mode: mode };
+  const handleSelectMood = (selectedMood: string) => {
+    setSessionData(prev => ({ ...prev, social_mood: selectedMood || 'Low-pressure' }));
+    setIsTyping(true);
+    setMessages(prev => prev.map(m => m.id === 'step_mood' ? { ...m, interactiveStep: 'done' as const } : m));
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, { id: 'step_mode', sender: 'App', text: `Energy set to ${selectedMood || 'Low-pressure'}. How do you want to connect?`, interactiveStep: 'interaction' }]);
+    }, 1000);
+  };
+
+  // Timing is only asked for chat mode at this point — voice/meeting collect their own
+  // scheduled time as part of picking that channel, so we don't ask for a time twice.
+  const handleSelectTiming = async (type: 'now' | 'later') => {
+    setMessages(prev => prev.map(m => m.id === 'step_timing' ? { ...m, interactiveStep: 'done' as const } : m));
+    if (type === 'now') {
+      const finalData = { ...sessionData, timing_type: 'now' };
+      setSessionData(finalData);
+      await submitSession(finalData, 'step_timing');
+    } else {
+      setMessages(prev => [...prev, { id: 'step_calendar', sender: 'App', text: 'Configure your future session timestamp:', interactiveStep: 'calendar_picker' }]);
+    }
+  };
+
+  const handleConfirmTimestamp = async (finalDate: Date) => {
+    const finalData = { ...sessionData, timing_type: 'Scheduled', scheduled_at: finalDate.toISOString() };
     setSessionData(finalData);
+    await submitSession(finalData, 'step_calendar');
+  };
 
+  const submitSession = async (finalData: typeof sessionData, doneStepId: string) => {
+    if (!user?.id) {
+      Alert.alert("Session Expired", "Please log in again to host a session.");
+      return;
+    }
+
+    setIsSubmitting(true);
     setMessages(prev => [
-      ...prev.map(m => m.id === 'step_mode' ? { ...m, interactiveStep: 'done' as const } : m),
-      { id: 'scanning_loader', sender: 'System', text: 'Scanning for active connections matching your criteria filters...', isSystem: true }
+      ...prev.map(m => m.id === doneStepId ? { ...m, interactiveStep: 'done' as const } : m),
+      { id: `scanning_loader_${Date.now()}`, sender: 'System', text: 'Adding you to the matching queue...', isSystem: true }
     ]);
 
     try {
-      const { error } = await supabase.from('sessions').insert({
-        host_id: user?.id,
-        intent_text: finalData.intent_text,
-        target_group_size: finalData.target_group_size,
-        comfort_mode: finalData.comfort_mode,
-        timing_type: finalData.timing_type,
-        connection_mode: finalData.connection_mode,
-        status: finalData.timing_type === 'now' ? 'Active' : 'Upcoming'
+      await createSessionRecord({
+        hostId: user.id,
+        intent: finalData.intent_text,
+        groupSize: finalData.target_group_size,
+        comfortMode: finalData.comfort_mode,
+        socialMood: finalData.social_mood || 'Low-pressure',
+        timing: finalData.timing_type,
+        connectionMode: finalData.connection_mode,
+        scheduledAt: finalData.scheduled_at,
       });
 
-      if (error) throw error;
-
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev.filter(m => m.id !== 'scanning_loader'),
-          { id: 'match_success', sender: 'System', text: 'Match Found! Safe space initialized. Privacy guards active.', isSystem: true },
-          { id: 'partner_intro', sender: 'Partner', text: `Hey Augustine! I saw you wanted to do "${finalData.intent_text}". I am down to tag along here!` }
-        ]);
-      }, 2500);
-
+      router.replace('/(tabs)/my-tags');
     } catch (err: any) {
-      Alert.alert("Publishing Failed", err.message || "Network write fault.");
+      console.error("Session initialization crash path:", err.message);
+      Alert.alert("Publishing Failed", err.message);
+      setMessages(prev => prev.map(m => m.id === doneStepId ? { ...m, interactiveStep: 'interaction' as const } : m));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSelectMode = async (mode: 'chat' | 'call') => {
+    if (!user?.id) {
+      Alert.alert("Session Expired", "Please log in again to host a session.");
+      return;
+    }
+    if (standing !== 'active') {
+      Alert.alert("Action unavailable", `Your account is ${standing} and can't create new sessions right now.`);
+      return;
+    }
+
+    const finalData = { ...sessionData, connection_mode: mode };
+    setSessionData(finalData);
+    setMessages(prev => prev.map(m => m.id === 'step_mode' ? { ...m, interactiveStep: 'done' as const } : m));
+
+    if (mode === 'chat') {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { id: 'step_timing', sender: 'App', text: 'When do you want to connect?', interactiveStep: 'timing' }]);
+      }, 1000);
+      return;
+    }
+
+    // mode === 'call' — a real in-app voice/video call, so it always needs a
+    // time so both sides know when to expect it (no phone number, no link).
+    setMessages(prev => [...prev, { id: 'step_call_time', sender: 'App', text: 'When should the call happen? Pick a time so you both know when to expect it.', interactiveStep: 'call_time_picker' }]);
+  };
+
+  const handleConfirmCallTime = async (finalDate: Date) => {
+    const finalData = { ...sessionData, connection_mode: 'call' as const, scheduled_at: finalDate.toISOString() };
+    setSessionData(finalData);
+    await submitSession(finalData, 'step_call_time');
+  };
+
+  const handleQuickLaunch = async (
+    intent: string,
+    size: number,
+    comfort: string,
+    mode: 'chat' | 'call'
+  ) => {
+    if (!user?.id) {
+      Alert.alert("Session Expired", "Please log in again to host a session.");
+      return;
+    }
+    if (standing !== 'active') {
+      Alert.alert("Action unavailable", `Your account is ${standing} and can't create new sessions right now.`);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createSessionRecord({
+        hostId: user.id,
+        intent,
+        groupSize: size,
+        comfortMode: comfort,
+        socialMood: sessionData.social_mood || 'Low-pressure',
+        timing: 'now',
+        connectionMode: mode,
+      });
+
+      router.replace('/(tabs)/my-tags');
+    } catch (err: any) {
+      Alert.alert("Publishing Failed", err.message || "Could not create your tag-along session.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const startNewSession = () => {
-    setSessionData({ intent_text: '', target_group_size: 1, comfort_mode: 'Anyone', timing_type: 'now', connection_mode: 'chat' });
-    setMessages([{ id: 'welcome_msg', sender: 'App', text: 'Hi Augustine 👋\nWho are your people today? Type below to match with them' }]);
+    setSessionData({ intent_text: '', target_group_size: 1, comfort_mode: 'Anyone', social_mood: 'Low-pressure', timing_type: 'now', connection_mode: 'chat', scheduled_at: null });
+    setMessages([{ id: 'welcome_msg', sender: 'App', text: 'Hi Augustine 👋\nWhat kind of company do you need today? Type your reason or tap a suggestion below.' }]);
   };
+
+  const hasIntent = sessionData.intent_text.length > 0;
+  const isAuthLocked = isLoading || !user?.id;
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Tag Along</Text>
-        {sessionData.intent_text.length > 0 && (
-          <TouchableOpacity style={styles.newSessionBtn} onPress={startNewSession}>
-            <Ionicons name="add" size={16} color="#EF4444" />
-            <Text style={styles.newSessionText}>New Stream</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <HomeHeader
+        hasActiveIntent={hasIntent}
+        onResetSession={startNewSession}
+        unreadCount={unreadCount}
+        onPressNotifications={() => router.push('/notifications')}
+      />
 
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.canvasArea}
-        contentContainerStyle={styles.canvasContent}
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-        showsVerticalScrollIndicator={false}
-      >
-        <ConversationalCanvas
-          messages={messages}
-          onSelectSize={handleSelectSize}
-          onSelectComfort={handleSelectComfort}
-          onSelectTiming={handleSelectTiming}
-          onSelectMode={handleSelectMode}
-        />
+      <StandingBanner standing={standing} notice={notice} onPressLearnMore={() => router.push('/safety/guidelines')} />
+
+      <ScrollView ref={scrollViewRef} style={styles.canvasArea} contentContainerStyle={styles.canvasContent} onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })} showsVerticalScrollIndicator={false}>
+        <ConversationalCanvas messages={messages} onSelectSize={handleSelectSize} onSelectComfort={handleSelectComfort} onConfirmGenders={handleConfirmGenders} onSelectMood={handleSelectMood} onSelectTiming={handleSelectTiming} onConfirmTimestamp={handleConfirmTimestamp} onSelectMode={handleSelectMode} onConfirmCallTime={handleConfirmCallTime} />
+
+        {!hasIntent && (
+          <View style={{ width: '100%' }}>
+            <DailySparkAnchor onTapSpark={(text) => setUniversalInput(text)} onQuickLaunch={handleQuickLaunch} />
+          </View>
+        )}
+
+        {!hasIntent && <SocialMomentumTicker onTapSuggestion={(text) => setUniversalInput(text)} />}
+
+        {isTyping && (
+          <View style={styles.typingIndicatorRow}>
+            <View style={styles.avatarMockCircle}></View>
+            <View style={styles.typingBubble}><ActivityIndicator size="small" color={TagAlongColors.primary} /></View>
+          </View>
+        )}
       </ScrollView>
 
-      {!sessionData.intent_text && (
-        <View style={styles.suggestionsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.suggestionsScroll}>
-            {SUGGESTIONS.map(tag => (
-              <TouchableOpacity key={tag} style={styles.chipBtn} onPress={() => setUniversalInput(tag)}>
-                <Text style={styles.chipBtnText}>{tag}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+      <SuggestionsBar isVisible={!hasIntent} onSelectSuggestion={(tag) => setUniversalInput(tag)} />
 
-      <View style={styles.inputStickyFooter}>
-        <View style={styles.inputLayoutContainer}>
-          <TextInput
-            style={styles.universalInputArea}
-            placeholder={sessionData.intent_text ? "Message your active stream lobby..." : "e.g., Reading a book together, quiet company..."}
-            placeholderTextColor="#94A3B8"
-            value={universalInput}
-            onChangeText={setUniversalInput}
-            multiline
-            editable={!isSubmitting}
-          />
-          <TouchableOpacity 
-            style={[styles.arrowSubmitBtn, !universalInput.trim() && styles.disabledSubmitBtn]}
-            onPress={handleSend}
-            disabled={!universalInput.trim() || isSubmitting}
-          >
-            <Ionicons name="arrow-up" size={18} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.safetyFooterLabel}>Your data boundaries and total anonymity are guaranteed.</Text>
-      </View>
+      <UniversalInputPanel value={universalInput} onChangeText={setUniversalInput} onSubmit={handleSend} isSubmitting={isSubmitting} isTyping={isTyping} isAuthLocked={isAuthLocked} hasActiveIntent={hasIntent} />
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAF9F6' },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 60, paddingHorizontal: 20, paddingBottom: 12, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderColor: '#F1F5F9' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: TagAlongColors.primary },
-  newSessionBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF2F2', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 12 },
-  newSessionText: { fontSize: 12, color: '#EF4444', fontWeight: '600', marginLeft: 2 },
   canvasArea: { flex: 1 },
-  canvasContent: { padding: 20, paddingBottom: 30 },
-  suggestionsContainer: { paddingVertical: 8, backgroundColor: '#FAF9F6' },
-  suggestionsScroll: { paddingHorizontal: 20, gap: 8 },
-  chipBtn: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 16 },
-  chipBtnText: { fontSize: 13, color: '#475569', fontWeight: '500' },
-  inputStickyFooter: { paddingHorizontal: 20, paddingVertical: 14, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderColor: '#F1F5F9', paddingBottom: Platform.OS === 'ios' ? 24 : 14 },
-  inputLayoutContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 24, paddingLeft: 16, paddingRight: 6, paddingVertical: 4 },
-  universalInputArea: { flex: 1, fontSize: 14, color: TagAlongColors.textDark, maxHeight: 80, paddingVertical: 6 },
-  arrowSubmitBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: TagAlongColors.textDark, alignItems: 'center', justifyContent: 'center' },
-  disabledSubmitBtn: { backgroundColor: '#CBD5E1', opacity: 0.6 },
-  safetyFooterLabel: { fontSize: 11, color: '#94A3B8', textAlign: 'center', marginTop: 10, fontWeight: '500' }
+  canvasContent: { padding: 20, paddingBottom: 40 },
+  typingIndicatorRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 8, alignSelf: 'flex-start' },
+  avatarMockCircle: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#E0F2FE' },
+  typingBubble: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 16 }
 });

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Camera, ShieldAlert, ArrowLeft } from 'lucide-react-native';
 import { BRAND_COLORS } from '../../constants/Colors';
 
 export default function ProfileSetupScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [selectedPrefs, setSelectedPrefs] = useState<string[]>(['Daily commute', 'School runs']);
@@ -25,7 +27,7 @@ export default function ProfileSetupScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
         
         {/* Navigation Arrow Header Backing Layer */}
-        <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
+        <TouchableOpacity style={[styles.backArrow, { top: insets.top + 20 }]} onPress={() => router.back()}>
           <ArrowLeft size={24} color={BRAND_COLORS.textDark} />
         </TouchableOpacity>
 
@@ -124,7 +126,7 @@ export default function ProfileSetupScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFDF9' },
   container: { flex: 1 },
-  backArrow: { position: 'absolute', top: Platform.OS === 'android' ? 44 : 20, left: 20, zIndex: 10, padding: 8 },
+  backArrow: { position: 'absolute', left: 20, zIndex: 10, padding: 8 },
   scrollContainer: { padding: 24, paddingTop: 40, alignItems: 'center' },
   header: { alignItems: 'center', width: '100%' },
   progressContainer: { flexDirection: 'row', gap: 6, marginVertical: 12, width: 140, justifyContent: 'center' },

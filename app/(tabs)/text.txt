@@ -1,0 +1,141 @@
+Logs for your project will appear below. Press Ctrl+C to exit.
+› Reloading apps
+iOS Bundled 8358ms node_modules/expo-router/entry.js (1 module)
+ ERROR  Session initialization crash path: Could not find the 'target_group_size' column of 'sessions' in the schema cache 
+
+Code: home.tsx
+  238 |       }
+  239 |     } catch (err: any) {
+> 240 |       console.error('Session initialization crash path:', err.message);
+      |                    ^
+  241 |       Alert.alert('Publishing Failed', err.message || 'Network insertion connection fault.');
+  242 |       setMessages(prev => prev.map(m => m.id === 'step_mode' ? { ...m, interactiveStep: 'interaction' as const } : m));
+  243 |     } finally {
+Call Stack
+  handleSelectMode (app/(tabs)/home.tsx:240:20)
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. scanning_loader 
+
+Code: ConversationalCanvas.tsx
+  37 |         if (isSystem) {
+  38 |           return (
+> 39 |             <View key={msg.id} style={styles.systemCard}>
+     |             ^
+  40 |               {msg.id === 'scanning_loader' && (
+  41 |                 <ActivityIndicator size="small" color="#64748B" style={{ marginRight: 8 }} />
+  42 |               )}
+Call Stack
+  messages.map$argument_0 (components/home/ConversationalCanvas.tsx:39:13)
+  ConversationalCanvas (components/home/ConversationalCanvas.tsx:33:20)
+  UnifiedHomeScreen (app/(tabs)/home.tsx:322:9)
+  TabLayout (app/(tabs)/_layout.tsx:7:5)
+  RootLayoutNavigation (app/_layout.tsx:39:5)
+  RootLayout (app/_layout.tsx:52:7)
+ ERROR  Session initialization crash path: Could not find the 'target_group_size' column of 'sessions' in the schema cache 
+
+Code: home.tsx
+  238 |       }
+  239 |     } catch (err: any) {
+> 240 |       console.error('Session initialization crash path:', err.message);
+      |                    ^
+  241 |       Alert.alert('Publishing Failed', err.message || 'Network insertion connection fault.');
+  242 |       setMessages(prev => prev.map(m => m.id === 'step_mode' ? { ...m, interactiveStep: 'interaction' as const } : m));
+  243 |     } finally {
+Call Stack
+  handleSelectMode (app/(tabs)/home.tsx:240:20)
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. scanning_loader 
+
+Code: ConversationalCanvas.tsx
+  37 |         if (isSystem) {
+  38 |           return (
+> 39 |             <View key={msg.id} style={styles.systemCard}>
+     |             ^
+  40 |               {msg.id === 'scanning_loader' && (
+  41 |                 <ActivityIndicator size="small" color="#64748B" style={{ marginRight: 8 }} />
+  42 |               )}
+Call Stack
+  messages.map$argument_0 (components/home/ConversationalCanvas.tsx:39:13)
+  ConversationalCanvas (components/home/ConversationalCanvas.tsx:33:20)
+  UnifiedHomeScreen (app/(tabs)/home.tsx:322:9)
+  TabLayout (app/(tabs)/_layout.tsx:7:5)
+  RootLayoutNavigation (app/_layout.tsx:39:5)
+  RootLayout (app/_layout.tsx:52:7)
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. scanning_loader 
+
+Code: ConversationalCanvas.tsx
+  37 |         if (isSystem) {
+  38 |           return (
+> 39 |             <View key={msg.id} style={styles.systemCard}>
+     |             ^
+  40 |               {msg.id === 'scanning_loader' && (
+  41 |                 <ActivityIndicator size="small" color="#64748B" style={{ marginRight: 8 }} />
+  42 |               )}
+Call Stack
+  messages.map$argument_0 (components/home/ConversationalCanvas.tsx:39:13)
+  ConversationalCanvas (components/home/ConversationalCanvas.tsx:33:20)
+  UnifiedHomeScreen (app/(tabs)/home.tsx:322:9)
+  TabLayout (app/(tabs)/_layout.tsx:7:5)
+  RootLayoutNavigation (app/_layout.tsx:39:5)
+  RootLayout (app/_layout.tsx:52:7)
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. scanning_loader 
+
+Code: ConversationalCanvas.tsx
+  37 |         if (isSystem) {
+  38 |           return (
+> 39 |             <View key={msg.id} style={styles.systemCard}>
+     |             ^
+  40 |               {msg.id === 'scanning_loader' && (
+  41 |                 <ActivityIndicator size="small" color="#64748B" style={{ marginRight: 8 }} />
+  42 |               )}
+Call Stack
+  messages.map$argument_0 (components/home/ConversationalCanvas.tsx:39:13)
+  ConversationalCanvas (components/home/ConversationalCanvas.tsx:33:20)
+  UnifiedHomeScreen (app/(tabs)/home.tsx:322:9)
+  TabLayout (app/(tabs)/_layout.tsx:7:5)
+  RootLayoutNavigation (app/_layout.tsx:39:5)
+  RootLayout (app/_layout.tsx:52:7)
+ ERROR  Session initialization crash path: Could not find the 'target_group_size' column of 'sessions' in the schema cache 
+
+Code: home.tsx
+  238 |       }
+  239 |     } catch (err: any) {
+> 240 |       console.error('Session initialization crash path:', err.message);
+      |                    ^
+  241 |       Alert.alert('Publishing Failed', err.message || 'Network insertion connection fault.');
+  242 |       setMessages(prev => prev.map(m => m.id === 'step_mode' ? { ...m, interactiveStep: 'interaction' as const } : m));
+  243 |     } finally {
+Call Stack
+  handleSelectMode (app/(tabs)/home.tsx:240:20)
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. scanning_loader 
+
+Code: ConversationalCanvas.tsx
+  37 |         if (isSystem) {
+  38 |           return (
+> 39 |             <View key={msg.id} style={styles.systemCard}>
+     |             ^
+  40 |               {msg.id === 'scanning_loader' && (
+  41 |                 <ActivityIndicator size="small" color="#64748B" style={{ marginRight: 8 }} />
+  42 |               )}
+Call Stack
+  messages.map$argument_0 (components/home/ConversationalCanvas.tsx:39:13)
+  ConversationalCanvas (components/home/ConversationalCanvas.tsx:33:20)
+  UnifiedHomeScreen (app/(tabs)/home.tsx:322:9)
+  TabLayout (app/(tabs)/_layout.tsx:7:5)
+  RootLayoutNavigation (app/_layout.tsx:39:5)
+  RootLayout (app/_layout.tsx:52:7)
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. scanning_loader 
+
+Code: ConversationalCanvas.tsx
+  37 |         if (isSystem) {
+  38 |           return (
+> 39 |             <View key={msg.id} style={styles.systemCard}>
+     |             ^
+  40 |               {msg.id === 'scanning_loader' && (
+  41 |                 <ActivityIndicator size="small" color="#64748B" style={{ marginRight: 8 }} />
+  42 |               )}
+Call Stack
+  messages.map$argument_0 (components/home/ConversationalCanvas.tsx:39:13)
+  ConversationalCanvas (components/home/ConversationalCanvas.tsx:33:20)
+  UnifiedHomeScreen (app/(tabs)/home.tsx:322:9)
+  TabLayout (app/(tabs)/_layout.tsx:7:5)
+  RootLayoutNavigation (app/_layout.tsx:39:5)
+  RootLayout (app/_layout.tsx:52:7)
